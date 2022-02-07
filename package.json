@@ -1,27 +1,64 @@
 {
-  "name": "express-mongo-utility",
-  "version": "1.0.9",
-  "main": "index.js",
+  "_args": [
+    [
+      "express-mongo-handler@1.8.0",
+      "/Users/vathanaluangpaseuth/Documents/initer/express-mongo"
+    ]
+  ],
+  "_from": "express-mongo-handlers",
+  "_id": "express-mongo-handlers@1.8.0",
+  "_inBundle": false,
+  "_integrity": "sha512-pVF4kQdRYnlrow8uSw5YHm+8fgU9wJyFVBBgbqQCeDbnceCVAOATAmbKTZ48EB9cKpUQ/qYpgPhHkC7pxobzKA==",
+  "_location": "/express-mongo-handlers",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "express-mongo-handlers",
+    "name": "express-mongo-handlers",
+    "escapedName": "express-mongo-handlers",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/express-mongo-handlers/-/express-mongo-handlers-1.8.0.tgz",
+  "_shasum": "9e9f2d9f45135a94c1cf357549f68fdcaa293d0f",
+  "_spec": "express-mongo-handlers",
+  "_where": "/Users/vathanaluangpaseuth/Documents/initer/express-mongo",
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/bankonly/express-mongo-utility/issues"
+  },
+  "bundleDependencies": false,
   "dependencies": {
-    "aws-sdk": "^2.1067.0",
-    "axios": "^0.25.0",
+    "aws-sdk": "^2.1069.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
+    "express": "^4.17.2",
     "express-fileupload": "^1.3.1",
-    "express-useragent": "^1.0.15",
-    "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
     "sharp": "^0.30.0",
-    "socket.io": "^2.3.0"
+    "socket.io": "^4.4.1",
+    "uuid": "^8.3.2"
   },
-  "devDependencies": {
-    "express": "^4.17.2",
-    "mongoose": "^6.2.0"
+  "deprecated": false,
+  "description": "",
+  "devDependencies": {},
+  "homepage": "https://github.com/bankonly/express-mongo-utility#readme",
+  "keywords": [],
+  "license": "ISC",
+  "main": "index.js",
+  "name": "express-mongo-handlers",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bankonly/express-mongo-utility.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "version": "1.11.0"
 }

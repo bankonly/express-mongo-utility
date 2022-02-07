@@ -1,13 +1,10 @@
 module.exports = {
-  env_example: require("./env.json"),
-  query: require("./utils/mongo"),
-  validator: require("./utils/validator"),
-  Res: require("./utils/api-response"),
-  common: require("./utils/common"),
-  socket: require("./utils/socket"),
-  discord: require("./utils/discord"),
-  listen: require("./utils/listener"),
-  aws: require("./utils/aws"),
-  middle: require("./utils/midleware-register"),
-  discord: require("./utils/discord"),
-};
+    socket: require("./utils/socket"),
+    Res: require("./utils/api-response"),
+    aws: require("./utils/aws"),
+    validator: require("./utils/body-validation"),
+    handler: require("./utils/handler"),
+    query: require("./utils/query"),
+    helper: require("./utils/helper"),
+    server: require("./utils/server")
+}
