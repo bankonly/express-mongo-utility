@@ -5,8 +5,9 @@ const sendOtpLog = require("../data-sets/send-otp.json");
 
 let transporter = null;
 let minutePerRequest = 1;
+let maxTimeVerify = 1;
 
-const mailConfig = ({ email, service, password, limitMinutePerRequest = 1 }) => {
+const mailConfig = ({ email, service, password, limitMinutePerRequest = 1, maxTimeVerifyAvailable = 3 }) => {
   transporter = Mail.createTransport({
     service: service,
     auth: {
@@ -15,9 +16,10 @@ const mailConfig = ({ email, service, password, limitMinutePerRequest = 1 }) => 
     },
   });
   minutePerRequest = limitMinutePerRequest;
+  maxTimeVerify = maxTimeVerifyAvailable
 };
 
-const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null, otp_code, link, enableLog = true, tooManySendMessage }) => {
+const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null, otpCode, link, enableLog = true, tooManySendMessage }) => {
   if (!transporter) throw new Error(`Invalid configuration mailConfig`);
   const mailSendOption = {
     from: from == null ? process.env.MAIL_ID : from,
@@ -28,7 +30,7 @@ const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null,
       link ||
       `
       <h3>Your verify code</h3>
-      <h1>${otp_code}</h1>
+      <h1>${otpCode}</h1>
       `,
   };
 
@@ -37,6 +39,8 @@ const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null,
     const logData = {
       email: to,
       created_at: now_date.getTime(),
+      otpCode,
+      isVerified: false
     };
     let created_at = logData.created_at;
     const emailIndex = sendOtpLog.findIndex((e) => e.email === to);
@@ -45,6 +49,7 @@ const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null,
       const minutes = Math.floor((logData.created_at - created_at) / 60000);
       if (minutes >= minutePerRequest) {
         sendOtpLog[emailIndex].created_at = logData.created_at
+        sendOtpLog[emailIndex].otpCode = otpCode
       } else {
         throw new Error(`400-MAIL429::${tooManySendMessage || `Please wait after ${minutePerRequest} minutes and try again`}`)
       }
@@ -64,8 +69,55 @@ const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null,
   }
 };
 
+function verifyOtp({ email, otpCode, throwError = false }) {
+  const emailIndex = sendOtpLog.findIndex((e) => e.email === email);
+  if (emailIndex === -1) {
+    if (throwError) throw new Error(`400-MAILER0001::Request failed`)
+    return false
+  }
+
+  if (sendOtpLog[emailIndex].isVerified) {
+    if (throwError) throw new Error(`400-MAILER0002::Request failed`)
+    return false
+  }
+
+  const now_date = new Date();
+  let created_at = sendOtpLog[emailIndex].created_at;
+  const minutes = Math.floor((now_date.getTime() - created_at) / 60000);
+
+  if (minutes >= maxTimeVerify) {
+    if (throwError) throw new Error(`400-MAILER0003::Request failed`)
+    return false
+  }
+
+  storedOtp = sendOtpLog[emailIndex].otpCode;
+
+  if (otpCode !== storedOtp) {
+    if (throwError) throw new Error(`400-MAILER0004::Request failed`)
+    return false
+  }
+
+  sendOtpLog[emailIndex].isVerified = true
+  fs.writeFileSync(__dirname + "/../data-sets/send-otp.json", JSON.stringify(sendOtpLog));
+
+  return true
+}
+
 function clearLogData() {
   fs.writeFileSync(__dirname + "/../data-sets/send-otp.json", JSON.stringify([]));
+}
+
+function isVerified(email) {
+  const emailIndex = sendOtpLog.findIndex((e) => e.email === email);
+  if (emailIndex === -1) return false
+  return sendOtpLog[emailIndex].isVerified
+}
+
+function setVerifiedValue(email, value) {
+  const emailIndex = sendOtpLog.findIndex((e) => e.email === email);
+  if (emailIndex === -1) return false
+  sendOtpLog[emailIndex].isVerified = value || false
+  fs.writeFileSync(__dirname + "/../data-sets/send-otp.json", JSON.stringify(sendOtpLog));
 }
 
 module.exports = {
@@ -73,4 +125,7 @@ module.exports = {
   send,
   sendOTPLog: require("../data-sets/send-otp.json"),
   clearLogData,
+  verifyOtp,
+  isVerified,
+  setVerifiedValue
 };
