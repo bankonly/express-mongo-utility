@@ -16,10 +16,10 @@ const mailConfig = ({ email, service, password, limitMinutePerRequest = 1, maxTi
     },
   });
   minutePerRequest = limitMinutePerRequest;
-  maxTimeVerify = maxTimeVerifyAvailable
+  maxTimeVerify = maxTimeVerifyAvailable;
 };
 
-const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null, otpCode, link, enableLog = true, tooManySendMessage }) => {
+const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null, otpCode, link, enableLog = true, tooManySendMessage, toVerified }) => {
   if (!transporter) throw new Error(`Invalid configuration mailConfig`);
   const mailSendOption = {
     from: from == null ? process.env.MAIL_ID : from,
@@ -40,7 +40,7 @@ const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null,
       email: to,
       created_at: now_date.getTime(),
       otpCode,
-      isVerified: false
+      isVerified: false,
     };
     let created_at = logData.created_at;
     const emailIndex = sendOtpLog.findIndex((e) => e.email === to);
@@ -48,10 +48,12 @@ const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null,
       created_at = sendOtpLog[emailIndex].created_at;
       const minutes = Math.floor((logData.created_at - created_at) / 60000);
       if (minutes >= minutePerRequest) {
-        sendOtpLog[emailIndex].created_at = logData.created_at
-        sendOtpLog[emailIndex].otpCode = otpCode
+        sendOtpLog[emailIndex].created_at = logData.created_at;
+        sendOtpLog[emailIndex].otpCode = otpCode;
       } else {
-        throw new Error(`400-MAIL429::${tooManySendMessage || `Please wait after ${minutePerRequest} minutes and try again`}`)
+        if (!toVerified) {
+          throw new Error(`400-MAIL429::${tooManySendMessage || `Please wait after ${minutePerRequest} minutes and try again`}`);
+        }
       }
     } else {
       sendOtpLog.push(logData);
@@ -60,7 +62,6 @@ const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null,
     fs.writeFileSync(__dirname + "/../data-sets/send-otp.json", JSON.stringify(sendOtpLog));
   }
   try {
-
     const sendMail = await transporter.sendMail(mailSendOption);
     if (sendMail.error) throw new Error("Mail failed");
   } catch (error) {
@@ -72,35 +73,35 @@ const send = async ({ to, text = "Greeting!!", subject = "SUBJECT", from = null,
 function verifyOtp({ email, otpCode, throwError = false }) {
   const emailIndex = sendOtpLog.findIndex((e) => e.email === email);
   if (emailIndex === -1) {
-    if (throwError) throw new Error(`400-MAILER0001::Request failed`)
-    return false
+    if (throwError) throw new Error(`400-MAILER0001::Request failed`);
+    return false;
   }
 
-  if (sendOtpLog[emailIndex].isVerified) {
-    if (throwError) throw new Error(`400-MAILER0002::Request failed`)
-    return false
-  }
+  // if (sendOtpLog[emailIndex].isVerified) {
+  //   if (throwError) throw new Error(`400-MAILER0002::Request failed`);
+  //   return false;
+  // }
 
   const now_date = new Date();
   let created_at = sendOtpLog[emailIndex].created_at;
   const minutes = Math.floor((now_date.getTime() - created_at) / 60000);
 
   if (minutes >= maxTimeVerify) {
-    if (throwError) throw new Error(`400-MAILER0003::Request failed`)
-    return false
+    if (throwError) throw new Error(`400-MAILER0003::Request failed`);
+    return false;
   }
 
   storedOtp = sendOtpLog[emailIndex].otpCode;
 
   if (otpCode !== storedOtp) {
-    if (throwError) throw new Error(`400-MAILER0004::Request failed`)
-    return false
+    if (throwError) throw new Error(`400-MAILER0004::Request failed`);
+    return false;
   }
 
-  sendOtpLog[emailIndex].isVerified = true
+  sendOtpLog[emailIndex].isVerified = true;
   fs.writeFileSync(__dirname + "/../data-sets/send-otp.json", JSON.stringify(sendOtpLog));
 
-  return true
+  return true;
 }
 
 function clearLogData() {
@@ -109,14 +110,14 @@ function clearLogData() {
 
 function isVerified(email) {
   const emailIndex = sendOtpLog.findIndex((e) => e.email === email);
-  if (emailIndex === -1) return false
-  return sendOtpLog[emailIndex].isVerified
+  if (emailIndex === -1) return false;
+  return sendOtpLog[emailIndex].isVerified;
 }
 
 function setVerifiedValue(email, value) {
   const emailIndex = sendOtpLog.findIndex((e) => e.email === email);
-  if (emailIndex === -1) return false
-  sendOtpLog[emailIndex].isVerified = value || false
+  if (emailIndex === -1) return false;
+  sendOtpLog[emailIndex].isVerified = value || false;
   fs.writeFileSync(__dirname + "/../data-sets/send-otp.json", JSON.stringify(sendOtpLog));
 }
 
@@ -127,5 +128,5 @@ module.exports = {
   clearLogData,
   verifyOtp,
   isVerified,
-  setVerifiedValue
+  setVerifiedValue,
 };

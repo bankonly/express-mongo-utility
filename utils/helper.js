@@ -1,4 +1,15 @@
 const CryptoJS = require("crypto-js");
+const Jwt = require("jsonwebtoken");
+
+const jwtGenerator = (payload) => {
+  const token = Jwt.sign(payload, process.env.SECRET_KEY, { expiresIn: process.env.TOKEN_LIFE_TIME });
+  const refresh_token = Jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET_KEY, { expiresIn: process.env.REFRESH_TOKEN_TOKEN_LIFE_TIME });
+  return { token, refresh_token };
+};
+const jwtGeneratorResetToken = (payload) => {
+  const token = Jwt.sign(payload, process.env.RESET_PWD_SECRET_KEY, { expiresIn: process.env.RESET_PWD_TOKEN_LIFE_TIME });
+  return { token };
+};
 
 const encrypt = (passwordString, secretKey) => {
   const hashPassword = CryptoJS.AES.encrypt(passwordString, secretKey).toString();
@@ -275,4 +286,6 @@ module.exports = {
   isObjectId,
   encrypt,
   decrypt,
+  jwtGenerator,
+  jwtGeneratorResetToken,
 };
