@@ -10,7 +10,7 @@ class Query {
         return this.model.findByIdAndUpdate(_id, body, update_option)
     }
 
-    async findByIdAndDelete(_id, body = { is_active: true }, opts) {
+    async findByIdAndDelete(_id, body = { deletedAt: new Date() }, opts) {
         let update_option = { returnDocument: 'after', omitUndefined: true }
         if (opts) update_option = { ...update_option.omitUndefined, ...opts }
         return this.model.findByIdAndUpdate(_id, body, update_option)
@@ -20,26 +20,26 @@ class Query {
         {
             many = true,
             limit = null,
-            is_active = true,
-            sort = { created_at: -1 },
-            sort_date = { start_date: null, end_date: null, field: "created_at" },
-            paginate = { page: 1, limit: 20, optional: true, data_set: {}, summary: true },
+            deletedAt = null,
+            sort = { createdAt: -1 },
+            sortDate = { startDate: null, endDate: null, field: "createdAt" },
+            paginate = { page: 1, limit: 20, optional: true, dataSet: {}, summary: true },
             _id,
             condition = {},
-            check_is_active = true,
+            checkIsActive = true,
             populate,
-            select = "-__v -updated_at -is_active",
-            search = { key: [], key_word: null, options: "i" },
-            throw_error = false,
+            select = "-__v -updatedAt -deletedAt",
+            search = { key: [], keyWord: null, options: "i" },
+            throwError = false,
         }, req
     ) {
         if (!this.model) throw new Error("model is requried in find function");
-        if (check_is_active) {
-            condition = { is_active: is_active, ...condition };
+        if (checkIsActive) {
+            condition = { deletedAt: deletedAt, ...condition };
         }
-        sort_date = { ...{ start_date: null, end_date: null, field: "created_at" }, ...sort_date }
+        sortDate = { ...{ startDate: null, endDate: null, field: "createdAt" }, ...sortDate }
 
-        paginate = { ...{ optional: true, data_set: {}, summary: true }, ...paginate, }
+        paginate = { ...{ optional: true, dataSet: {}, summary: true }, ...paginate, }
         if (paginate.summary === "true") {
             paginate.summary = true
         }
@@ -50,27 +50,27 @@ class Query {
 
 
         // New Added - 1
-        if (sort_date.start_date && sort_date.end_date) {
-            if (!sort_date.field) throw new Error(`400::missing sort field`)
+        if (sortDate.startDate && sortDate.endDate) {
+            if (!sortDate.field) throw new Error(`400::missing sort field`)
 
-            const start_date = new Date(sort_date.start_date + "00:00:00") || NaN
-            const end_date = new Date(sort_date.end_date + "23:59:5") || NaN
-            if (!start_date && !end_date) {
-                throw new Error(`400::start_date, end_date invalid`)
+            const startDate = new Date(sortDate.startDate + "00:00:00") || NaN
+            const endDate = new Date(sortDate.endDate + "23:59:5") || NaN
+            if (!startDate && !endDate) {
+                throw new Error(`400::startDate, endDate invalid`)
             }
 
-            condition[sort_date.field] = { $gte: sort_date.start_date + " 00:00:00", $lte: sort_date.end_date + " 23:59:59" }
+            condition[sortDate.field] = { $gte: sortDate.startDate + " 00:00:00", $lte: sortDate.endDate + " 23:59:59" }
         } // --End 1
 
 
         // search function.
-        if (search.key_word) {
+        if (search.keyWord) {
             if (search.key.length < 1) throw new Error("400::search query is requried");
             if (!condition["$or"] && !Array.isArray(condition["$or"])) {
                 condition["$or"] = []
             }
             for (let i = 0; i < search.key.length; i++) {
-                condition["$or"].push({ [`${search.key[i]}`]: { $regex: search.key_word, $options: "i" } })
+                condition["$or"].push({ [`${search.key[i]}`]: { $regex: search.keyWord, $options: "i" } })
             }
         }
 
@@ -95,9 +95,9 @@ class Query {
             }
             result = result.sort(sort);
         }
-        if ((paginate.optional && Object.keys(paginate.data_set).length > 0) || !paginate.optional) {
-            paginate.limit = parseInt(paginate.limit) || parseInt(paginate.data_set.limit);
-            paginate.page = parseInt(paginate.page) || parseInt(paginate.data_set.page);
+        if ((paginate.optional && Object.keys(paginate.dataSet).length > 0) || !paginate.optional) {
+            paginate.limit = parseInt(paginate.limit) || parseInt(paginate.dataSet.limit);
+            paginate.page = parseInt(paginate.page) || parseInt(paginate.dataSet.page);
 
             if (!paginate.limit || !paginate.page) {
                 throw new Error(`400::Page and Limit should be number`)
@@ -127,19 +127,19 @@ class Query {
             result = await result.limit(limit)
         }
 
-        if (throw_error) {
+        if (throwError) {
             if (!result || result.length < 1) throw new Error(`400::CONTENT404`);
         }
 
         return result;
     };
 
-    defaultOption(req, { search_field, sort_date_field = "created_at", is_active = true }) {
+    defaultOption(req, { searchField, sortDateField = "createdAt", deletedAt = null }) {
         let paginate_data = {}
         if (req.query.limit || req.query.page) {
             paginate_data = { limit: req.query.limit, page: req.query.page }
         }
-        const query_option = { is_active, paginate: { data_set: paginate_data, summary: req.query.summary }, search: { key: search_field, key_word: req.query.q, }, sort: req.query.sort, sort_date: { start_date: req.query.start_date, end_date: req.query.end_date, field: sort_date_field } }
+        const query_option = { deletedAt, paginate: { dataSet: paginate_data, summary: req.query.summary }, search: { key: searchField, keyWord: req.query.q, }, sort: req.query.sort, sortDate: { startDate: req.query.startDate, endDate: req.query.endDate, field: sortDateField } }
         return query_option
     }
 
