@@ -40,7 +40,7 @@ const handler = (mongoose) =>
       };
 
       if (path) {
-        expressApp.use(handlerSwitchCase(_method, _path, middleware, handlerAPITransaction));
+        handlerSwitchCase(_method, _path, middleware, handlerAPITransaction);
       }
 
       return handlerAPITransaction;
