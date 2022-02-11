@@ -8,4 +8,5 @@ module.exports = {
   helper: require("./utils/helper"),
   server: require("./utils/server"),
   mailer: require("./utils/mail"),
+  pubnub: require("./utils/pubnub"),
 };
