@@ -13,7 +13,7 @@ const onStatus = (s, channel) => {
 
 module.exports = {
   listen: (channel) => {
-    if (pubnub) throw new Error("pubnub not registered correctly");
+    if (!pubnub) throw new Error("pubnub not registered correctly");
     if (!channel) throw new Error(channel + " required");
     return (callback) => {
       pubnub.subscribe({ channels: [channel] });
@@ -28,14 +28,14 @@ module.exports = {
     };
   },
   publish: (channel) => (message) => {
-    if (pubnub) throw new Error("pubnub not registered correctly");
+    if (!pubnub) throw new Error("pubnub not registered correctly");
     pubnub.publish({ channel, message }, function (status, response) {
       if (status.error) {
         console.log(status, response, channel);
       }
     });
   },
-  initPubnub: ({ PUBLISHKEY, SUBSCRIBEKEY, UUID }) => {
+  initPubnub: ({ PUBLISHKEY = process.env.PUBLISHKEY, SUBSCRIBEKEY = process.env.SUBSCRIBEKEY, UUID = process.env.UUID }) => {
     pubnub = new PubNub({
       publishKey: PUBLISHKEY,
       subscribeKey: SUBSCRIBEKEY,
