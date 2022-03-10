@@ -10,7 +10,7 @@ const { mailConfig } = require("./mail");
 
 const appMiddlewareRegister =
   (app) =>
-  (option = { enableAccessLog: true, callback: () => {} ,enablePubnub = false}) => {
+  (option = { enableAccessLog: true, callback: () => {} }) => {
     option = { enableAccessLog: true, callback: () => {}, ...option };
     app.use(cors());
     app.use(express.urlencoded({ extended: true }));
