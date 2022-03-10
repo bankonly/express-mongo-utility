@@ -181,9 +181,9 @@ const validate = async ({ rule, req, excludeBody = true, type = "body", version 
       }
     }
 
-    // if(key_update_check !== "_id"){
-    _body[split_rule_key.length > 1 ? split_rule_key[0] : rule_key] = body_data;
-    // }
+    if(body_data !== null){
+        _body[split_rule_key.length > 1 ? split_rule_key[0] : rule_key] = body_data;
+      }
   }
 
   if (!excludeBody) {
